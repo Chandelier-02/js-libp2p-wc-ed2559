@@ -1,4 +1,6 @@
 import { ed25519 as ed } from '@noble/curves/ed25519'
+import { toString as uint8arrayToString } from 'uint8arrays/to-string'
+import crypto from '../../webcrypto/index.js'
 import type { Uint8ArrayKeyPair } from '../interface.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -45,14 +47,41 @@ export function generateKeyFromSeed (seed: Uint8Array): Uint8ArrayKeyPair {
   }
 }
 
-export function hashAndSign (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array {
-  const privateKeyRaw = privateKey.subarray(0, KEYS_BYTE_LENGTH)
+export function hashAndSign (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): () => Promise<Uint8Array> {
+  let key: CryptoKey | null
 
-  return ed.sign(msg instanceof Uint8Array ? msg : msg.subarray(), privateKeyRaw)
+  let privateKeyRaw: Uint8Array
+  if (privateKey.length === PRIVATE_KEY_BYTE_LENGTH) {
+    privateKeyRaw = privateKey.subarray(0, 32)
+  } else {
+    privateKeyRaw = privateKey
+  }
+
+  const jwk: JsonWebKey = {
+    crv: 'Ed25519',
+    kty: 'OKP',
+    x: uint8arrayToString(privateKey.subarray(32), 'base64url'),
+    d: uint8arrayToString(privateKeyRaw, 'base64url'),
+    ext: true,
+    key_ops: ['sign']
+  }
+
+  return async () => {
+    key ??= await crypto.get().subtle.importKey('jwk', jwk, { name: 'Ed25519' }, true, ['sign'])
+
+    const buffer = await crypto.get().subtle.sign({ name: 'Ed25519' }, key, msg instanceof Uint8Array ? msg : msg.subarray())
+    return new Uint8Array(buffer, 0, buffer.byteLength)
+  }
 }
 
-export function hashAndVerify (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): boolean {
-  return ed.verify(sig, msg instanceof Uint8Array ? msg : msg.subarray(), publicKey)
+export function hashAndVerify (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): () => Promise<boolean> {
+  let key: CryptoKey | null
+
+  return async () => {
+    key ??= await crypto.get().subtle.importKey('raw', publicKey.buffer, { name: 'Ed25519' }, false, ['verify'])
+    const isValid = await crypto.get().subtle.verify({ name: 'Ed25519' }, key, sig, msg instanceof Uint8Array ? msg : msg.subarray())
+    return isValid
+  }
 }
 
 function concatKeys (privateKeyRaw: Uint8Array, publicKey: Uint8Array): Uint8Array {

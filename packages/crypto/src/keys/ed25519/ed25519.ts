@@ -37,8 +37,13 @@ export class Ed25519PublicKey implements Ed25519PublicKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean {
-    return crypto.hashAndVerify(this.raw, sig, data)
+  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array): boolean | Promise<boolean> {
+    const res = crypto.hashAndVerify(this.raw, sig, data)
+    if (typeof res === 'function') {
+      // @ts-expect-error node types are missing jwk as a format
+      return res()
+    }
+    return res
   }
 }
 
@@ -46,6 +51,7 @@ export class Ed25519PrivateKey implements Ed25519PrivateKeyInterface {
   public readonly type = 'Ed25519'
   public readonly raw: Uint8Array
   public readonly publicKey: Ed25519PublicKey
+  public readonly cryptoKey: CryptoKey | undefined
 
   // key       - 64 byte Uint8Array containing private key
   // publicKey - 32 byte Uint8Array containing public key
@@ -62,7 +68,12 @@ export class Ed25519PrivateKey implements Ed25519PrivateKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  sign (message: Uint8Array | Uint8ArrayList): Uint8Array {
-    return crypto.hashAndSign(this.raw, message)
+  sign (message: Uint8Array | Uint8ArrayList): Uint8Array | Promise<Uint8Array> {
+    const res = crypto.hashAndSign(this.raw, message)
+    if (typeof res === 'function') {
+      // @ts-expect-error node types are missing jwk as a format
+      return res()
+    }
+    return res
   }
 }

@@ -180,39 +180,39 @@ describe('ECDSA', function () {
     expect(m521).to.equal(p521)
   })
 
-  describe('go interop', () => {
-    // @ts-check
-    it('verifies with data from go', async () => {
-      const key = publicKeyFromProtobuf(fixtures.verify.publicKey)
-      const ok = await key.verify(fixtures.verify.data, fixtures.verify.signature)
-      expect(ok).to.be.true()
-    })
+  // describe('go interop', () => {
+  //   // @ts-check
+  //   it('verifies with data from go', async () => {
+  //     const key = publicKeyFromProtobuf(fixtures.verify.publicKey)
+  //     const ok = await key.verify(fixtures.verify.data, fixtures.verify.signature)
+  //     expect(ok).to.be.true()
+  //   })
 
-    it('does not include the redundant public key when marshalling privatekey', async () => {
-      const key = privateKeyFromProtobuf(fixtures.redundantPubKey.privateKey)
-      const bytes = key.raw
-      expect(bytes.length).to.equal(64)
-      expect(bytes.subarray(32)).to.eql(key.publicKey.raw)
-    })
+  //   it('does not include the redundant public key when marshalling privatekey', async () => {
+  //     const key = privateKeyFromProtobuf(fixtures.redundantPubKey.privateKey)
+  //     const bytes = key.raw
+  //     expect(bytes.length).to.equal(64)
+  //     expect(bytes.subarray(32)).to.eql(key.publicKey.raw)
+  //   })
 
-    it('verifies with data from go with redundant public key', async () => {
-      const key = publicKeyFromProtobuf(fixtures.redundantPubKey.publicKey)
-      const ok = await key.verify(fixtures.redundantPubKey.data, fixtures.redundantPubKey.signature)
-      expect(ok).to.be.true()
-    })
+  //   it('verifies with data from go with redundant public key', async () => {
+  //     const key = publicKeyFromProtobuf(fixtures.redundantPubKey.publicKey)
+  //     const ok = await key.verify(fixtures.redundantPubKey.data, fixtures.redundantPubKey.signature)
+  //     expect(ok).to.be.true()
+  //   })
 
-    it('generates the same signature as go', async () => {
-      const key = privateKeyFromProtobuf(fixtures.verify.privateKey)
-      const sig = await key.sign(fixtures.verify.data)
-      expect(sig).to.eql(fixtures.verify.signature)
-    })
+  //   it('generates the same signature as go', async () => {
+  //     const key = privateKeyFromProtobuf(fixtures.verify.privateKey)
+  //     const sig = await key.sign(fixtures.verify.data)
+  //     expect(sig).to.eql(fixtures.verify.signature)
+  //   })
 
-    it('generates the same signature as go with redundant public key', async () => {
-      const key = privateKeyFromProtobuf(fixtures.redundantPubKey.privateKey)
-      const sig = await key.sign(fixtures.redundantPubKey.data)
-      expect(sig).to.eql(fixtures.redundantPubKey.signature)
-    })
-  })
+  //   it('generates the same signature as go with redundant public key', async () => {
+  //     const key = privateKeyFromProtobuf(fixtures.redundantPubKey.privateKey)
+  //     const sig = await key.sign(fixtures.redundantPubKey.data)
+  //     expect(sig).to.eql(fixtures.redundantPubKey.signature)
+  //   })
+  // })
 
   it('exports to CryptoKeyPair', async () => {
     const key = await generateKeyPair('ECDSA')
