@@ -277,13 +277,13 @@ export async function privateKeyToCryptoKeyPair (privateKey: PrivateKey): Promis
  */
 export async function privateKeyFromCryptoKeyPair (keyPair: CryptoKeyPair): Promise<PrivateKey> {
   if (keyPair.privateKey.algorithm.name === 'RSASSA-PKCS1-v1_5') {
-    const jwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey)
+    const jwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey) as JsonWebKey
 
     return jwkToRSAPrivateKey(jwk)
   }
 
   if (keyPair.privateKey.algorithm.name === 'ECDSA') {
-    const jwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey)
+    const jwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey) as JsonWebKey
 
     return new ECDSAPrivateKeyClass(jwk)
   }

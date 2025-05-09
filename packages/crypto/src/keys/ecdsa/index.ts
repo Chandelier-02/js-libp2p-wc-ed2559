@@ -8,10 +8,10 @@ export const ECDSA_P_384_OID = '1.3.132.0.34'
 export const ECDSA_P_521_OID = '1.3.132.0.35'
 
 export async function generateECDSAKey (curve: Curve = 'P-256'): Promise<JWKKeyPair> {
-  const keyPair: CryptoKeyPair = await crypto.subtle.generateKey({
+  const keyPair = await crypto.subtle.generateKey({
     name: 'ECDSA',
     namedCurve: curve
-  }, true, ['sign', 'verify'])
+  }, true, ['sign', 'verify']) as CryptoKeyPair
 
   return {
     publicKey: await crypto.subtle.exportKey('jwk', keyPair.publicKey),
