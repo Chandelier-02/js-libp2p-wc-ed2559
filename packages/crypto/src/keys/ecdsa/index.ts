@@ -16,7 +16,7 @@ export async function generateECDSAKey (curve: Curve = 'P-256'): Promise<JWKKeyP
   return {
     publicKey: await crypto.subtle.exportKey('jwk', keyPair.publicKey),
     privateKey: await crypto.subtle.exportKey('jwk', keyPair.privateKey)
-  }
+  } as JWKKeyPair
 }
 
 export async function hashAndSign (key: JsonWebKey, msg: Uint8Array | Uint8ArrayList): Promise<Uint8Array> {
